@@ -42,18 +42,18 @@ job_environments:
     NEWRELIC_APPNAME: P4 Bulgaria Production
     WP_DB_NAME: planet4-bulgaria_wordpress_master
     WP_STATELESS_BUCKET: planet4-bulgaria-stateless
-
 job_definitions:
   build_steps: &build_steps
     working_directory: ~/
     steps:
-      - setup_remote_docker
+      - setup_remote_docker:
+          docker_layer_caching: true
       - restore_cache:
           keys:
-            - composer-v1-{{ .Branch }}-{{ .Revision }}-{{ .BuildNum }}
-            - composer-v1-{{ .Branch }}-{{ .Revision }}
-            - composer-v1-{{ .Branch }}
-            - composer-v1
+            - composer-v5-{{ .Branch }}-{{ .Revision }}-{{ .BuildNum }}
+            - composer-v5-{{ .Branch }}-{{ .Revision }}
+            - composer-v5-{{ .Branch }}
+            - composer-v5
       - run: |
           if [[ -d source/cache ]]; then ls -al source/cache; fi
       - run: activate-gcloud-account.sh
@@ -321,12 +321,12 @@ workflows:
           - notify-promote
   tag:
     jobs:
-    - build-tag:
-        <<: *tag_common
-    - deploy-tag:
-        <<: *tag_common
-        requires:
-          - build-tag
+      - build-tag:
+          <<: *tag_common
+      - deploy-tag:
+          <<: *tag_common
+          requires:
+            - build-tag
 
   create-sync-sql:
     jobs:
